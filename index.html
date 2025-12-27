@@ -23,8 +23,22 @@
         * { box-sizing: border-box; touch-action: none; -webkit-tap-highlight-color: transparent; user-select: none; }
         body { background-color: var(--bg-body); color: white; font-family: 'Courier New', Courier, monospace; height: 100dvh; margin: 0; overflow: hidden; display: flex; justify-content: center; align-items: center; }
         
-        #console { width: 100%; max-width: 450px; height: 100%; background: linear-gradient(180deg, #333 0%, #111 100%); display: flex; flex-direction: column; padding: 10px; border-left: 2px solid #444; border-right: 2px solid #444; outline: none; }
-        #screen-area { flex: 1; background-color: var(--screen-bg); border: 4px solid #000; border-radius: 6px; margin-bottom: 10px; position: relative; display: flex; flex-direction: column; justify-content: center; align-items: center; overflow: hidden; }
+        #console { 
+            width: 100%; max-width: 450px; height: 100%; 
+            background: linear-gradient(180deg, #333 0%, #111 100%); 
+            display: flex; flex-direction: column; 
+            padding: 5px; /* Margem reduzida para ganhar espaço */
+            border-left: 2px solid #444; border-right: 2px solid #444; outline: none; 
+        }
+        
+        #screen-area { 
+            flex: 1; /* Ocupa todo o espaço sobrando */
+            background-color: var(--screen-bg); 
+            border: 4px solid #000; border-radius: 6px; 
+            margin-bottom: 10px; 
+            position: relative; display: flex; flex-direction: column; 
+            justify-content: center; align-items: center; overflow: hidden; 
+        }
         
         #ui-panel { width: 100%; position: absolute; top: 5px; padding: 0 10px; display: flex; justify-content: space-between; font-size: 14px; font-weight: bold; color: #00ffcc; text-shadow: 0 0 5px rgba(0, 255, 204, 0.5); z-index: 10; pointer-events: none;}
         
@@ -39,7 +53,13 @@
             pointer-events: none; opacity: 0; transition: opacity 0.3s; z-index: 20;
         }
         
-        canvas { background-color: transparent; image-rendering: pixelated; max-height: 98%; max-width: 98%; aspect-ratio: 10/20; box-shadow: 0 0 15px rgba(0,0,0,0.5); }
+        canvas { 
+            background-color: transparent; 
+            image-rendering: pixelated; 
+            height: 98%; width: auto; max-width: 98%; /* Garante que cabe sem distorcer */
+            aspect-ratio: 10/20; 
+            box-shadow: 0 0 15px rgba(0,0,0,0.5); 
+        }
 
         .overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; color: #fff; font-size: 20px; font-weight: bold; z-index: 50; text-align: center; cursor: pointer; }
         #start-screen { display: flex; }
@@ -47,10 +67,24 @@
         .blink { animation: blinker 1s linear infinite; color: #ffcc00; margin-top: 15px; font-size: 14px;}
         @keyframes blinker { 50% { opacity: 0; } }
 
-        #controls-area { height: 38vh; max-height: 320px; display: flex; flex-direction: column; justify-content: flex-end; padding-bottom: 15px; }
+        /* Controles Ajustados */
+        #controls-area { 
+            display: flex; flex-direction: column; justify-content: flex-end; 
+            padding-bottom: 20px; flex-shrink: 0; 
+        }
         .row-controls { display: flex; justify-content: space-between; align-items: center; padding: 0 10px; margin-top: auto; }
-        .small-controls { display: flex; gap: 15px; justify-content: center; margin-bottom: 15px; }
-        .small-btn { width: 45px; height: 45px; background-color: #555; border-radius: 50%; color: #fff; font-size: 10px; box-shadow: 0 4px 0 #222; display: flex; align-items: center; justify-content: center; font-weight: bold; cursor: pointer; }
+        .small-controls { display: flex; gap: 15px; justify-content: center; margin-bottom: 10px; }
+        
+        .small-btn { 
+            width: 45px; height: 45px; 
+            background-color: #555; border-radius: 50%; color: #fff; 
+            font-size: 14px; /* Aumentado */
+            font-weight: 900; 
+            box-shadow: 0 4px 0 #222; 
+            display: flex; align-items: center; justify-content: center; cursor: pointer; 
+        }
+        #btn-sound { font-size: 22px; } /* Clave de sol maior */
+
         .small-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 #222; }
         .btn-active { background-color: #00ffcc; color: #000; box-shadow: 0 4px 0 #009977; }
         .btn-mode { background-color: #ffcc00; color: #000; box-shadow: 0 4px 0 #b38f00; }
@@ -156,6 +190,7 @@
     let dropInterval = 800;
     let dropCounter = 0;
     let isFastDropping = false;
+    let crashTimeout = null;
 
     // Estados Jogos
     let grid = []; 
@@ -168,28 +203,22 @@
     let gp = { playerLane: 1, enemies: [], items: [], scenery: [], roadOffset: 0, baseSpeed: 90, scoreDist: 0, sceneryTimer: 0, level: 1 };
     let shooter = { playerX: 100, playerY: 360, bullets: [], enemies: [], items: [], spawnTimer: 0, lastShot: 0, stars: [], level: 1 };
 
-    /* --- RECORDES INDIVIDUAIS --- */
+    /* --- RECORDES --- */
     function loadHighScore() {
         const key = 'neoBrickHi_' + gameMode;
         highScore = parseInt(localStorage.getItem(key)) || 0;
         hiScoreEl.innerText = highScore.toString().padStart(4, '0');
     }
-
     function saveHighScore() {
-        if (score > highScore) {
-            highScore = score;
-            localStorage.setItem('neoBrickHi_' + gameMode, highScore);
-            hiScoreEl.innerText = highScore.toString().padStart(4, '0');
-        }
+        if (score > highScore) { highScore = score; localStorage.setItem('neoBrickHi_' + gameMode, highScore); hiScoreEl.innerText = highScore.toString().padStart(4, '0'); }
     }
 
-    /* --- PARTÍCULAS --- */
+    /* --- PARTICULAS --- */
     let particles = [];
     class Particle {
         constructor(x, y, color) {
             this.x = x; this.y = y;
-            this.vx = (Math.random() - 0.5) * 8;
-            this.vy = (Math.random() - 0.5) * 8;
+            this.vx = (Math.random() - 0.5) * 8; this.vy = (Math.random() - 0.5) * 8;
             this.alpha = 1; this.color = color || '#FFF'; this.size = Math.random() * 4 + 2;
         }
         update() { this.x += this.vx; this.y += this.vy; this.alpha -= 0.03; this.size *= 0.9; }
@@ -200,9 +229,7 @@
         for(let i=0; i<12; i++) particles.push(new Particle(x, y, color));
     }
     function updateParticles() {
-        for (let i = particles.length - 1; i >= 0; i--) {
-            particles[i].update(); if (particles[i].alpha <= 0) particles.splice(i, 1);
-        }
+        for (let i = particles.length - 1; i >= 0; i--) { particles[i].update(); if (particles[i].alpha <= 0) particles.splice(i, 1); }
     }
     function drawParticles() { particles.forEach(p => p.draw(ctx)); }
 
@@ -215,7 +242,6 @@
         if (e.code === 'ArrowLeft') action = 'left';
         if (e.code === 'ArrowRight') action = 'right';
         if (e.code === 'Space') action = 'action';
-        
         if (action) { if(action === 'action') simulatePress('key-action'); else simulatePress('key-'+action); }
         if ((e.code === 'ArrowDown' || e.code === 'Space') && !isFastDropping) startFastDrop(e);
         if (action && action !== 'down' && action !== 'action') handleInput(action, e);
@@ -223,37 +249,40 @@
         if (action === 'action') e.preventDefault();
     });
     document.addEventListener('keyup', (e) => { if (e.code === 'ArrowDown' || e.code === 'Space') stopFastDrop(e); });
-    function simulatePress(id) {
-        const btn = document.getElementById(id);
-        if(btn) { btn.style.transform = "translateY(3px)"; btn.style.boxShadow = "0 1px 0 var(--dpad-shadow)"; setTimeout(() => { btn.style.transform = ""; btn.style.boxShadow = ""; }, 100); }
-    }
+    function simulatePress(id) { const btn = document.getElementById(id); if(btn) { btn.style.transform = "translateY(3px)"; btn.style.boxShadow = "0 1px 0 var(--dpad-shadow)"; setTimeout(() => { btn.style.transform = ""; btn.style.boxShadow = ""; }, 100); } }
 
     let audioCtx = null;
     function startSystem() {
-        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        if (audioCtx.state === 'suspended') audioCtx.resume();
-        playTone(440, 'square', 0.1);
-        isSystemStarted = true;
-        startScreen.style.display = 'none';
-        resetGame();
+        try {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            playTone(440, 'square', 0.1);
+            isSystemStarted = true;
+            startScreen.style.display = 'none';
+            resetGame();
+        } catch(e) { console.log('Audio init failed', e); isSystemStarted=true; startScreen.style.display='none'; resetGame();}
     }
     function playSound(type) {
         if (!soundEnabled || !isSystemStarted || !audioCtx) return;
-        if (type === 'move') playTone(200, 'square', 0.05);
-        else if (type === 'drop') playTone(100, 'sawtooth', 0.08);
-        else if (type === 'hit') { playTone(150, 'sawtooth', 0.05); playTone(100, 'square', 0.1); }
-        else if (type === 'gameover') { playTone(300, 'sawtooth', 0.2); setTimeout(() => playTone(150, 'sawtooth', 0.4), 200); } 
-        else if (type === 'clear' || type === 'brick') { playTone(600, 'square', 0.1); playTone(800, 'sine', 0.1); }
-        else if (type === 'eat' || type === 'powerup') { playTone(1000, 'sine', 0.1); playTone(1500, 'square', 0.1); } 
-        else if (type === 'shoot') playTone(700, 'square', 0.05);
-        else if (type === 'levelup') { playTone(880, 'square', 0.1); setTimeout(()=>playTone(1100, 'square', 0.2), 100); }
+        try {
+            // Volumes AUMENTADOS e Padronizados (0.2 a 0.5)
+            if (type === 'move') playTone(200, 'square', 0.15);
+            else if (type === 'drop') playTone(100, 'sawtooth', 0.25);
+            else if (type === 'hit') { playTone(150, 'sawtooth', 0.25); playTone(100, 'square', 0.3); }
+            else if (type === 'gameover') { playTone(300, 'sawtooth', 0.4); setTimeout(() => playTone(150, 'sawtooth', 0.6), 200); } 
+            else if (type === 'clear' || type === 'brick') { playTone(600, 'square', 0.3); playTone(800, 'sine', 0.3); }
+            else if (type === 'eat' || type === 'powerup') { playTone(1000, 'sine', 0.3); playTone(1500, 'square', 0.3); } 
+            else if (type === 'shoot') playTone(700, 'square', 0.2);
+            else if (type === 'levelup') { playTone(880, 'square', 0.3); setTimeout(()=>playTone(1100, 'square', 0.4), 100); }
+        } catch(e){}
     }
     function playTone(freq, type, duration) {
         try {
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
             osc.type = type; osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-            gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+            // Volume Base aumentado
+            gain.gain.setValueAtTime(0.25, audioCtx.currentTime); 
             gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
             osc.connect(gain); gain.connect(audioCtx.destination);
             osc.start(); osc.stop(audioCtx.currentTime + duration);
@@ -284,31 +313,48 @@
     }
 
     function createMatrix(w, h) { const matrix = []; while (h--) matrix.push(new Array(w).fill(0)); return matrix; }
+    
     function drawPixel(x, y, colorCode) {
         if (colorCode === undefined || colorCode < 0 || colorCode >= COLORS.length) return;
-        ctx.fillStyle = COLORS[colorCode];
-        ctx.shadowColor = (colorCode !== 0) ? COLORS[colorCode] : 'transparent';
+        
         ctx.shadowBlur = (colorCode !== 0 && colorCode !== 17 && colorCode !== 16 && colorCode !== 19) ? 6 : 0;
-        ctx.fillRect(x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+        if(colorCode !== 0) ctx.shadowColor = COLORS[colorCode];
+
+        // LÓGICA DA GRADE (Tetris e Snake)
+        if (gameMode === 'tetris' || gameMode === 'snake') {
+            if(colorCode !== 0) {
+                // Cheio
+                ctx.fillStyle = COLORS[colorCode];
+                ctx.fillRect(x * BLOCK_SIZE + 1, y * BLOCK_SIZE + 1, BLOCK_SIZE - 2, BLOCK_SIZE - 2);
+            } else {
+                // Vazio (Grade Guia Cinza Clara/Transparente)
+                ctx.strokeStyle = 'rgba(200, 200, 200, 0.15)'; 
+                ctx.lineWidth = 1;
+                ctx.strokeRect(x * BLOCK_SIZE + 0.5, y * BLOCK_SIZE + 0.5, BLOCK_SIZE - 1, BLOCK_SIZE - 1);
+            }
+        } else {
+            // Outros jogos: Limpo
+            if(colorCode !== 0) {
+                 ctx.fillStyle = COLORS[colorCode];
+                 ctx.fillRect(x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+            }
+        }
         ctx.shadowBlur = 0;
     }
-    function addScore(pts) { 
-        score += pts; 
-        scoreEl.innerText = score.toString().padStart(4, '0');
-        saveHighScore(); 
-    }
+
+    function addScore(pts) { score += pts; scoreEl.innerText = score.toString().padStart(4, '0'); saveHighScore(); }
     function triggerCrash(x, y, color) {
         if(isCrashing || isGameOver) return;
         isCrashing = true;
         if (gameMode === 'grandprix' || gameMode === 'shooter') spawnExplosion(x, y, color);
         else spawnExplosion(x * BLOCK_SIZE + 5, y * BLOCK_SIZE + 5, COLORS[color]);
         playSound('hit');
-        setTimeout(() => setGameOver(), 1500); 
+        crashTimeout = setTimeout(() => setGameOver(), 1500); 
     }
     function setGameOver() { if(isGameOver) return; isGameOver = true; isCrashing = false; playSound('gameover'); gameoverScreen.style.display = 'flex'; }
     function showLevelUp() { levelIndEl.style.opacity = 1; playSound('levelup'); setTimeout(() => levelIndEl.style.opacity = 0, 1500); }
 
-    /* --- JOGOS (Grid) --- */
+    /* --- JOGOS --- */
     function initTetris() { grid = createMatrix(COLS, ROWS); dropInterval = 800; spawnPiece(); }
     function inputTetris(a) { if(a=='left'){player.pos.x--;if(collide(grid,player))player.pos.x++;else playSound('move')} if(a=='right'){player.pos.x++;if(collide(grid,player))player.pos.x--;else playSound('move')} if(a=='up'||a=='action'){rotate(player.matrix,1);if(collide(grid,player))rotate(player.matrix,-1);else playSound('move')} }
     function updateTetris(dt) { dropCounter+=dt; if(dropCounter>(isFastDropping?30:dropInterval)){ player.pos.y++; if(collide(grid,player)){player.pos.y--;merge(grid,player);playSound('drop');sweep();spawnPiece();} dropCounter=0; } }
@@ -320,11 +366,30 @@
     function sweep(){let c=1;for(let y=ROWS-1;y>=0;y--){if(grid[y].every(v=>v!==0)){for(let x=0; x<COLS; x++) spawnExplosion(x*BLOCK_SIZE, y*BLOCK_SIZE, COLORS[grid[y][x]]);grid.splice(y,1);grid.unshift(new Array(COLS).fill(0));y++;addScore(c*10);c*=2;playSound('clear')}}}
     function rotate(m,d){for(let y=0;y<m.length;++y)for(let x=0;x<y;++x)[m[x][y],m[y][x]]=[m[y][x],m[x][y]];if(d>0)m.forEach(r=>r.reverse());else m.reverse()}
 
-    function initSnake(){snake=[{x:10,y:20},{x:10,y:21},{x:10,y:22}];snakeDir={x:0,y:-1};nextDir={x:0,y:-1};dropInterval=100;placeFood()}
+    function initSnake(){snake=[{x:10,y:20},{x:10,y:21},{x:10,y:22}];snakeDir={x:0,y:-1};nextDir={x:0,y:-1};dropInterval=100;placeFood();}
     function inputSnake(a){if(a=='up'&&snakeDir.y==0)nextDir={x:0,y:-1};if(a=='down'&&snakeDir.y==0)nextDir={x:0,y:1};if(a=='left'&&snakeDir.x==0)nextDir={x:-1,y:0};if(a=='right'&&snakeDir.x==0)nextDir={x:1,y:0};if(a=='action')dropInterval=30}
     function updateSnake(dt){dropCounter+=dt;if(dropCounter>dropInterval){snakeDir=nextDir;const h={x:snake[0].x+snakeDir.x,y:snake[0].y+snakeDir.y};if(h.x<0||h.x>=COLS||h.y<0||h.y>=ROWS||snake.some(s=>s.x==h.x&&s.y==h.y)){triggerCrash(snake[0].x, snake[0].y, 8);return}snake.unshift(h);if(h.x==food.x&&h.y==food.y){playSound('eat');addScore(10);placeFood()}else{snake.pop()}dropCounter=0}}
     function drawSnake(){for(let y=0;y<ROWS;y++)for(let x=0;x<COLS;x++)drawPixel(x,y,0);drawPixel(food.x,food.y,9);snake.forEach(s=>drawPixel(s.x,s.y,8))}
-    function placeFood(){let v=false;while(!v){food={x:Math.random()*COLS|0,y:Math.random()*ROWS|0};v=!snake.some(s=>s.x==food.x&&s.y==food.y)}}
+    
+    // SAFE PLACE FOOD (Lógica Corrigida para evitar travamento)
+    function placeFood(){
+        let empty = [];
+        for(let y=0; y<ROWS; y++) {
+            for(let x=0; x<COLS; x++) {
+                // Checa se não está na cobra
+                if(!snake.some(s => s.x === x && s.y === y)) {
+                    empty.push({x,y});
+                }
+            }
+        }
+        if(empty.length > 0) {
+            let rnd = Math.floor(Math.random() * empty.length);
+            food = empty[rnd];
+        } else {
+            // Ganhou ou encheu a tela
+            setGameOver();
+        }
+    }
 
     function initRace(){racePlayerX=8;raceEnemies=[];dropInterval=60;raceTick=0}
     function inputRace(a){if(a=='left'){if(racePlayerX>10){racePlayerX=8;playSound('move')}else if(racePlayerX>4){racePlayerX=2;playSound('move')}}if(a=='right'){if(racePlayerX<6){racePlayerX=8;playSound('move')}else if(racePlayerX<12){racePlayerX=14;playSound('move')}}if(a=='action'||a=='up')dropInterval=20}
@@ -349,14 +414,9 @@
     function checkFrogCollision() {const lane = lanes.find(l => l.y === frog.y);if (lane && lane.map[frog.x] === 1) {triggerCrash(frog.x, frog.y, 18);}}
     function drawFrogger() {for(let y=0; y<ROWS; y++) for(let x=0; x<COLS; x++) drawPixel(x,y,0);lanes.forEach(lane => { lane.map.forEach((val, x) => { if (val === 1) drawPixel(x, lane.y, 19); }); });drawPixel(frog.x, frog.y, 18);}
 
-    /* --- GRAND PRIX (TUNED & SCENERY & ITEMS) --- */
-    function initGrandPrix() {
-        gp = { playerLane: 1, enemies: [], items: [], scenery: [], roadOffset: 0, baseSpeed: 90, scoreDist: 0, sceneryTimer: 0, level: 1 };
-    }
-    function inputGrandPrix(a) {
-        if(a === 'left' && gp.playerLane > 0) { gp.playerLane--; playSound('move'); }
-        if(a === 'right' && gp.playerLane < 2) { gp.playerLane++; playSound('move'); }
-    }
+    /* --- GRAND PRIX --- */
+    function initGrandPrix() { gp = { playerLane: 1, enemies: [], items: [], scenery: [], roadOffset: 0, baseSpeed: 90, scoreDist: 0, sceneryTimer: 0, level: 1 }; }
+    function inputGrandPrix(a) { if(a === 'left' && gp.playerLane > 0) { gp.playerLane--; playSound('move'); } if(a === 'right' && gp.playerLane < 2) { gp.playerLane++; playSound('move'); } }
     function updateGrandPrix(dt) {
         gp.baseSpeed += dt * 0.005; let oldLevel = gp.level; gp.level = 1 + Math.floor(score / 500); if(gp.level > oldLevel) showLevelUp();
         let currentSpeed = isFastDropping ? gp.baseSpeed * 3 : gp.baseSpeed;
@@ -381,97 +441,12 @@
     function drawF1Car(x, y, scale, color) { ctx.fillStyle = color; let w = 20 * scale; let h = 30 * scale; ctx.fillRect(x - w*0.15, y - h/2, w*0.3, h); ctx.fillRect(x - w/2, y + h*0.2, w*0.3, h*0.3); ctx.fillRect(x + w*0.2, y + h*0.2, w*0.3, h*0.3); ctx.fillRect(x - w*0.4, y - h*0.4, w*0.2, h*0.2); ctx.fillRect(x + w*0.2, y - h*0.4, w*0.2, h*0.2); ctx.fillRect(x - w*0.4, y + h*0.4, w*0.8, h*0.1); ctx.beginPath(); ctx.moveTo(x, y - h/2); ctx.lineTo(x - w*0.1, y - h*0.6); ctx.lineTo(x + w*0.1, y - h*0.6); ctx.fill(); }
     function drawCactus(x, y, scale) { ctx.fillStyle = COLORS[22]; let h = 20 * scale; let w = 6 * scale; ctx.fillRect(x - w/2, y - h, w, h); ctx.fillRect(x - w*1.5, y - h*0.6, w, h*0.3); ctx.fillRect(x + w*0.5, y - h*0.8, w, h*0.3); ctx.fillRect(x - w*1.5, y - h*0.9, w, h*0.3); ctx.fillRect(x + w*0.5, y - h*1.1, w, h*0.3); }
 
-    /* --- SPACE SHOOTER (EVOLUTION & ITEMS) --- */
-    function initShooter() {
-        shooter = { playerX: 100, playerY: 360, bullets: [], enemies: [], items: [], spawnTimer: 0, lastShot: 0, stars: [], level: 1 };
-        dropInterval = 1000;
-        for(let i=0; i<50; i++) shooter.stars.push({x: Math.random()*200, y: Math.random()*400, speed: Math.random()*2+1});
-    }
-
-    function inputShooter(a) {
-        const speed = 8;
-        if (a === 'left' && shooter.playerX > 10) shooter.playerX -= speed;
-        if (a === 'right' && shooter.playerX < 190) shooter.playerX += speed;
-        if (a === 'action' || a === 'up') {
-            const now = Date.now();
-            let cooldown = (shooter.level >= 2) ? 150 : 250; 
-            if (now - shooter.lastShot > cooldown) {
-                if(shooter.level <= 2) {
-                    shooter.bullets.push({x: shooter.playerX, y: shooter.playerY - 15, vx: 0, vy: -5});
-                } else if (shooter.level === 3) {
-                    shooter.bullets.push({x: shooter.playerX - 8, y: shooter.playerY - 15, vx: 0, vy: -5});
-                    shooter.bullets.push({x: shooter.playerX + 8, y: shooter.playerY - 15, vx: 0, vy: -5});
-                } else {
-                    shooter.bullets.push({x: shooter.playerX, y: shooter.playerY - 15, vx: 0, vy: -5});
-                    shooter.bullets.push({x: shooter.playerX-5, y: shooter.playerY - 15, vx: -1, vy: -5});
-                    shooter.bullets.push({x: shooter.playerX+5, y: shooter.playerY - 15, vx: 1, vy: -5});
-                }
-                playSound('shoot'); shooter.lastShot = now;
-            }
-        }
-    }
-
-    function updateShooter(dt) {
-        dropInterval -= dt * 0.01; 
-        
-        let oldLevel = shooter.level;
-        if (score < 500) shooter.level = 1;
-        else if (score < 1500) shooter.level = 2;
-        else if (score < 3000) shooter.level = 3;
-        else shooter.level = 4;
-        if(shooter.level > oldLevel) showLevelUp();
-
-        shooter.stars.forEach(s => { s.y += s.speed; if(s.y > 400) s.y = 0; });
-        for (let i = shooter.bullets.length - 1; i >= 0; i--) {
-            let b = shooter.bullets[i]; b.y += b.vy; b.x += b.vx;
-            if (b.y < 0 || b.x < 0 || b.x > 200) shooter.bullets.splice(i, 1);
-        }
-        shooter.spawnTimer += dt;
-        if (shooter.spawnTimer > dropInterval) {
-            shooter.spawnTimer = 0;
-            if(Math.random() < 0.1) { 
-                shooter.items.push({x: Math.random() * 180 + 10, y: -20});
-            } else {
-                shooter.enemies.push({x: Math.random() * 180 + 10, y: -20, type: Math.random() > 0.5 ? 1 : 0});
-            }
-        }
-        for(let i=0; i<shooter.items.length; i++) {
-            let item = shooter.items[i]; item.y += 2;
-            if(item.y > 420) shooter.items.splice(i, 1);
-            else if(Math.abs(item.x - shooter.playerX) < 15 && Math.abs(item.y - shooter.playerY) < 15) {
-                shooter.items.splice(i, 1); i--; addScore(50); playSound('powerup');
-            }
-        }
-        for (let i = shooter.enemies.length - 1; i >= 0; i--) {
-            let e = shooter.enemies[i]; e.y += 2;
-            if(e.type === 1) e.x += Math.sin(e.y * 0.05) * 2; 
-            if (e.y > 420) { shooter.enemies.splice(i, 1); }
-            if (Math.abs(e.x - shooter.playerX) < 15 && Math.abs(e.y - shooter.playerY) < 15) {
-                triggerCrash(shooter.playerX, shooter.playerY, 23);
-            }
-            for (let j = shooter.bullets.length - 1; j >= 0; j--) {
-                let b = shooter.bullets[j];
-                if (b && Math.abs(e.x - b.x) < 15 && Math.abs(e.y - b.y) < 15) {
-                    spawnExplosion(e.x, e.y, 25); playSound('brick'); addScore(50);
-                    shooter.enemies.splice(i, 1); shooter.bullets.splice(j, 1); i--; break;
-                }
-            }
-        }
-    }
-
-    function drawShooter() {
-        ctx.fillStyle = "#000"; ctx.fillRect(0, 0, 200, 400);
-        ctx.fillStyle = "#FFF"; shooter.stars.forEach(s => ctx.fillRect(s.x, s.y, s.speed/2, s.speed/2));
-        ctx.fillStyle = COLORS[30]; shooter.items.forEach(it => ctx.fillRect(it.x-3, it.y-3, 6, 6));
-        ctx.fillStyle = COLORS[24]; shooter.bullets.forEach(b => ctx.fillRect(b.x - 2, b.y - 5, 4, 10));
-        shooter.enemies.forEach(e => { let c = e.type === 0 ? COLORS[25] : COLORS[26]; drawShip(e.x, e.y, c, true); });
-        drawShip(shooter.playerX, shooter.playerY, COLORS[23], false);
-    }
-
-    function drawShip(x, y, color, inverted) {
-        ctx.fillStyle = color; let dir = inverted ? -1 : 1;
-        ctx.beginPath(); ctx.moveTo(x, y - 10*dir); ctx.lineTo(x - 10, y + 10*dir); ctx.lineTo(x, y + 5*dir); ctx.lineTo(x + 10, y + 10*dir); ctx.closePath(); ctx.fill();
-    }
+    /* --- SPACE SHOOTER --- */
+    function initShooter() { shooter = { playerX: 100, playerY: 360, bullets: [], enemies: [], items: [], spawnTimer: 0, lastShot: 0, stars: [], level: 1 }; dropInterval = 1000; for(let i=0; i<50; i++) shooter.stars.push({x: Math.random()*200, y: Math.random()*400, speed: Math.random()*2+1}); }
+    function inputShooter(a) { const speed = 8; if (a === 'left' && shooter.playerX > 10) shooter.playerX -= speed; if (a === 'right' && shooter.playerX < 190) shooter.playerX += speed; if (a === 'action' || a === 'up') { const now = Date.now(); let cooldown = (shooter.level >= 2) ? 150 : 250; if (now - shooter.lastShot > cooldown) { if(shooter.level <= 2) { shooter.bullets.push({x: shooter.playerX, y: shooter.playerY - 15, vx: 0, vy: -5}); } else if (shooter.level === 3) { shooter.bullets.push({x: shooter.playerX - 8, y: shooter.playerY - 15, vx: 0, vy: -5}); shooter.bullets.push({x: shooter.playerX + 8, y: shooter.playerY - 15, vx: 0, vy: -5}); } else { shooter.bullets.push({x: shooter.playerX, y: shooter.playerY - 15, vx: 0, vy: -5}); shooter.bullets.push({x: shooter.playerX-5, y: shooter.playerY - 15, vx: -1, vy: -5}); shooter.bullets.push({x: shooter.playerX+5, y: shooter.playerY - 15, vx: 1, vy: -5}); } playSound('shoot'); shooter.lastShot = now; } } }
+    function updateShooter(dt) { dropInterval -= dt * 0.01; let oldLevel = shooter.level; if (score < 500) shooter.level = 1; else if (score < 1500) shooter.level = 2; else if (score < 3000) shooter.level = 3; else shooter.level = 4; if(shooter.level > oldLevel) showLevelUp(); shooter.stars.forEach(s => { s.y += s.speed; if(s.y > 400) s.y = 0; }); for (let i = shooter.bullets.length - 1; i >= 0; i--) { let b = shooter.bullets[i]; b.y += b.vy; b.x += b.vx; if (b.y < 0 || b.x < 0 || b.x > 200) shooter.bullets.splice(i, 1); } shooter.spawnTimer += dt; if (shooter.spawnTimer > dropInterval) { shooter.spawnTimer = 0; if(Math.random() < 0.1) { shooter.items.push({x: Math.random() * 180 + 10, y: -20}); } else { shooter.enemies.push({x: Math.random() * 180 + 10, y: -20, type: Math.random() > 0.5 ? 1 : 0}); } } for(let i=0; i<shooter.items.length; i++) { let item = shooter.items[i]; item.y += 2; if(item.y > 420) shooter.items.splice(i, 1); else if(Math.abs(item.x - shooter.playerX) < 15 && Math.abs(item.y - shooter.playerY) < 15) { shooter.items.splice(i, 1); i--; addScore(50); playSound('powerup'); } } for (let i = shooter.enemies.length - 1; i >= 0; i--) { let e = shooter.enemies[i]; e.y += 2; if(e.type === 1) e.x += Math.sin(e.y * 0.05) * 2; if (e.y > 420) { shooter.enemies.splice(i, 1); } if (Math.abs(e.x - shooter.playerX) < 15 && Math.abs(e.y - shooter.playerY) < 15) { triggerCrash(shooter.playerX, shooter.playerY, 23); } for (let j = shooter.bullets.length - 1; j >= 0; j--) { let b = shooter.bullets[j]; if (b && Math.abs(e.x - b.x) < 15 && Math.abs(e.y - b.y) < 15) { spawnExplosion(e.x, e.y, 25); playSound('brick'); addScore(50); shooter.enemies.splice(i, 1); shooter.bullets.splice(j, 1); i--; break; } } } }
+    function drawShooter() { ctx.fillStyle = "#000"; ctx.fillRect(0, 0, 200, 400); ctx.fillStyle = "#FFF"; shooter.stars.forEach(s => ctx.fillRect(s.x, s.y, s.speed/2, s.speed/2)); ctx.fillStyle = COLORS[30]; shooter.items.forEach(it => ctx.fillRect(it.x-3, it.y-3, 6, 6)); ctx.fillStyle = COLORS[24]; shooter.bullets.forEach(b => ctx.fillRect(b.x - 2, b.y - 5, 4, 10)); shooter.enemies.forEach(e => { let c = e.type === 0 ? COLORS[25] : COLORS[26]; drawShip(e.x, e.y, c, true); }); drawShip(shooter.playerX, shooter.playerY, COLORS[23], false); }
+    function drawShip(x, y, color, inverted) { ctx.fillStyle = color; let dir = inverted ? -1 : 1; ctx.beginPath(); ctx.moveTo(x, y - 10*dir); ctx.lineTo(x - 10, y + 10*dir); ctx.lineTo(x, y + 5*dir); ctx.lineTo(x + 10, y + 10*dir); ctx.closePath(); ctx.fill(); }
 
     /* --- LOOP --- */
     function switchGame() {
@@ -480,12 +455,18 @@
         gameMode = modes[(modes.indexOf(gameMode) + 1) % modes.length];
         titleEl.innerText = gameMode.toUpperCase();
         loadHighScore();
+        // Zera tudo antes de mudar
+        grid = createMatrix(COLS, ROWS);
+        if(crashTimeout) clearTimeout(crashTimeout);
         resetGame();
     }
     function resetGame() {
         gameoverScreen.style.display = 'none'; levelIndEl.style.opacity = 0;
         isGameOver = false; isCrashing = false; isPaused = false; score = 0; scoreEl.innerText = "0000"; particles = [];
-        loadHighScore();
+        // Segurança contra crash
+        if(crashTimeout) clearTimeout(crashTimeout);
+        grid = createMatrix(COLS, ROWS);
+        
         if (gameMode === 'tetris') initTetris();
         else if (gameMode === 'snake') initSnake();
         else if (gameMode === 'race') initRace();
@@ -507,30 +488,35 @@
     function update(time = 0) {
         const dt = time - lastTime; lastTime = time;
         if (isSystemStarted) {
-            if(gameMode !== 'grandprix' && gameMode !== 'shooter') ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            if (!isPaused && !isGameOver && !isCrashing) {
-                if (gameMode === 'tetris') updateTetris(dt);
-                else if (gameMode === 'snake') updateSnake(dt);
-                else if (gameMode === 'race') updateRace(dt);
-                else if (gameMode === 'breakout') updateBreakout(dt);
-                else if (gameMode === 'pacman') updatePacman(dt);
-                else if (gameMode === 'frogger') updateFrogger(dt);
-                else if (gameMode === 'grandprix') updateGrandPrix(dt);
-                else if (gameMode === 'shooter') updateShooter(dt);
-            }
+            try {
+                if(gameMode !== 'grandprix' && gameMode !== 'shooter') ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                if (!isPaused && !isGameOver && !isCrashing) {
+                    if (gameMode === 'tetris') updateTetris(dt);
+                    else if (gameMode === 'snake') updateSnake(dt);
+                    else if (gameMode === 'race') updateRace(dt);
+                    else if (gameMode === 'breakout') updateBreakout(dt);
+                    else if (gameMode === 'pacman') updatePacman(dt);
+                    else if (gameMode === 'frogger') updateFrogger(dt);
+                    else if (gameMode === 'grandprix') updateGrandPrix(dt);
+                    else if (gameMode === 'shooter') updateShooter(dt);
+                }
 
-            if (gameMode === 'tetris') drawTetris();
-            else if (gameMode === 'snake') drawSnake();
-            else if (gameMode === 'race') drawRace();
-            else if (gameMode === 'breakout') drawBreakout();
-            else if (gameMode === 'pacman') drawPacman();
-            else if (gameMode === 'frogger') drawFrogger();
-            else if (gameMode === 'grandprix') drawGrandPrix();
-            else if (gameMode === 'shooter') drawShooter();
-            
-            updateParticles();
-            drawParticles();
+                if (gameMode === 'tetris') drawTetris();
+                else if (gameMode === 'snake') drawSnake();
+                else if (gameMode === 'race') drawRace();
+                else if (gameMode === 'breakout') drawBreakout();
+                else if (gameMode === 'pacman') drawPacman();
+                else if (gameMode === 'frogger') drawFrogger();
+                else if (gameMode === 'grandprix') drawGrandPrix();
+                else if (gameMode === 'shooter') drawShooter();
+                
+                updateParticles();
+                drawParticles();
+            } catch(e) {
+                console.log("Game Loop Error recovered", e);
+                resetGame();
+            }
         }
         requestAnimationFrame(update);
     }
