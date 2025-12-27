@@ -3,13 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Neo Minigame</title>
+    <title>Neo Brick Game</title>
     
     <meta name="theme-color" content="#121212">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Neo Brick">
+    <meta name="mobile-web-app-capable" content="yes">
+    
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIiBzdHlsZT0iYmFja2dyb3VuZDojMTIxMjEyIj48cGF0aCBmaWxsPSIjMjIyIiBkPSJNNjQgMTI4aDM4NGMzNS4zIDAgNjQgMjguNyA2NCA2NHYxMjhjMCAzNS4zLTI4LjcgNjQtNjQgNjRINjRjLTM1LjMgMC02NC0yOC43LTY0LTY0VjE5MmMwLTM1LjMgMjguNy02NCA2NC02NHoiLz48Y2lyY2xlIGN4PSIzODAiIGN5PSIyNTYiIHI9IjQwIiBmaWxsPSIjZmYwMDU1Ii8+PGNpcmNsZSBjeD0iMzAwIiBjeT0iMjkwIiByPSI0MCIgZmlsbD0iIzAwZmZjYyIvPjxwYXRoIGZpbGw9IiM0NDQiIGQ9Ik0xMjAgMjAwaDQwdjExMmgtNDB6Ii8+PHBhdGggZmlsbD0iIzQ0NCIgZD0iTTg0IDIzNmgxMTJ2NDBIODR6Ii8+PC9zdmc+">
-    <link rel="manifest" href='data:application/manifest+json,{"name":"Neo Minigame Game","short_name":"Neo Minigame","start_url":".","display":"standalone","background_color":"#121212","theme_color":"#121212","icons":[{"src":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIiBzdHlsZT0iYmFja2dyb3VuZDojMTIxMjEyIj48cGF0aCBmaWxsPSIjMjIyIiBkPSJNNjQgMTI4aDM4NGMzNS4zIDAgNjQgMjguNyA2NCA2NHYxMjhjMCAzNS4zLTI4LjcgNjQtNjQgNjRINjRjLTM1LjMgMC02NC0yOC43LTY0LTY0VjE5MmMwLTM1LjMgMjguNy02NCA2NC02NHoiLz48Y2lyY2xlIGN4PSIzODAiIGN5PSIyNTYiIHI9IjQwIiBmaWxsPSIjZmYwMDU1Ii8+PGNpcmNsZSBjeD0iMzAwIiBjeT0iMjkwIiByPSI0MCIgZmlsbD0iIzAwZmZjYyIvPjxwYXRoIGZpbGw9IiM0NDQiIGQ9Ik0xMjAgMjAwaDQwdjExMmgtNDB6Ii8+PHBhdGggZmlsbD0iIzQ0NCIgZD0iTTg0IDIzNmgxMTJ2NDBIODR6Ii8+PC9zdmc+","sizes":"192x192","type":"image/svg+xml"}]}'>
+    
+    <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIiBzdHlsZT0iYmFja2dyb3VuZDojMTIxMjEyIj48cGF0aCBmaWxsPSIjMjIyIiBkPSJNNjQgMTI4aDM4NGMzNS4zIDAgNjQgMjguNyA2NCA2NHYxMjhjMCAzNS4zLTI4LjcgNjQtNjQgNjRINjRjLTM1LjMgMC02NC0yOC43LTY0LTY0VjE5MmMwLTM1LjMgMjguNy02NCA2NC02NHoiLz48Y2lyY2xlIGN4PSIzODAiIGN5PSIyNTYiIHI9IjQwIiBmaWxsPSIjZmYwMDU1Ii8+PGNpcmNsZSBjeD0iMzAwIiBjeT0iMjkwIiByPSI0MCIgZmlsbD0iIzAwZmZjYyIvPjxwYXRoIGZpbGw9IiM0NDQiIGQ9Ik0xMjAgMjAwaDQwdjExMmgtNDB6Ii8+PHBhdGggZmlsbD0iIzQ0NCIgZD0iTTg0IDIzNmgxMTJ2NDBIODR6Ii8+PC9zdmc+">
+
+    <link rel="manifest" href='data:application/manifest+json,{"name":"Neo Brick Game","short_name":"Neo Brick","start_url":".","display":"standalone","background_color":"#121212","theme_color":"#121212","orientation":"portrait","icons":[{"src":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIiBzdHlsZT0iYmFja2dyb3VuZDojMTIxMjEyIj48cGF0aCBmaWxsPSIjMjIyIiBkPSJNNjQgMTI4aDM4NGMzNS4zIDAgNjQgMjguNyA2NCA2NHYxMjhjMCAzNS4zLTI4LjcgNjQtNjQgNjRINjRjLTM1LjMgMC02NC0yOC43LTY0LTY0VjE5MmMwLTM1LjMgMjguNy02NCA2NC02NHoiLz48Y2lyY2xlIGN4PSIzODAiIGN5PSIyNTYiIHI9IjQwIiBmaWxsPSIjZmYwMDU1Ii8+PGNpcmNsZSBjeD0iMzAwIiBjeT0iMjkwIiByPSI0MCIgZmlsbD0iIzAwZmZjYyIvPjxwYXRoIGZpbGw9IiM0NDQiIGQ9Ik0xMjAgMjAwaDQwdjExMmgtNDB6Ii8+PHBhdGggZmlsbD0iIzQ0NCIgZD0iTTg0IDIzNmgxMTJ2NDBIODR6Ii8+PC9zdmc+","sizes":"512x512","type":"image/svg+xml","purpose":"any maskable"}]}'>
 
     <style>
         :root {
@@ -27,15 +33,15 @@
             width: 100%; max-width: 450px; height: 100%; 
             background: linear-gradient(180deg, #333 0%, #111 100%); 
             display: flex; flex-direction: column; 
-            padding: 5px; /* Margem reduzida para ganhar espaço */
+            padding: 5px; 
             border-left: 2px solid #444; border-right: 2px solid #444; outline: none; 
         }
         
         #screen-area { 
-            flex: 1; /* Ocupa todo o espaço sobrando */
+            flex: 1; 
             background-color: var(--screen-bg); 
             border: 4px solid #000; border-radius: 6px; 
-            margin-bottom: 10px; 
+            margin-bottom: 20px; 
             position: relative; display: flex; flex-direction: column; 
             justify-content: center; align-items: center; overflow: hidden; 
         }
@@ -56,7 +62,7 @@
         canvas { 
             background-color: transparent; 
             image-rendering: pixelated; 
-            height: 98%; width: auto; max-width: 98%; /* Garante que cabe sem distorcer */
+            height: 98%; width: auto; max-width: 98%;
             aspect-ratio: 10/20; 
             box-shadow: 0 0 15px rgba(0,0,0,0.5); 
         }
@@ -67,27 +73,29 @@
         .blink { animation: blinker 1s linear infinite; color: #ffcc00; margin-top: 15px; font-size: 14px;}
         @keyframes blinker { 50% { opacity: 0; } }
 
-        /* Controles Ajustados */
         #controls-area { 
             display: flex; flex-direction: column; justify-content: flex-end; 
             padding-bottom: 20px; flex-shrink: 0; 
         }
-        .row-controls { display: flex; justify-content: space-between; align-items: center; padding: 0 10px; margin-top: auto; }
-        .small-controls { display: flex; gap: 15px; justify-content: center; margin-bottom: 10px; }
+        
+        .row-controls { display: flex; justify-content: space-between; align-items: center; padding: 0 10px; margin-top: 5px; }
+        .small-controls { display: flex; gap: 15px; justify-content: center; margin-bottom: 5px; }
         
         .small-btn { 
             width: 45px; height: 45px; 
             background-color: #555; border-radius: 50%; color: #fff; 
-            font-size: 14px; /* Aumentado */
-            font-weight: 900; 
+            font-size: 16px; font-weight: 900; 
             box-shadow: 0 4px 0 #222; 
-            display: flex; align-items: center; justify-content: center; cursor: pointer; 
+            display: flex; align-items: center; justify-content: center; 
+            cursor: pointer; 
         }
-        #btn-sound { font-size: 22px; } /* Clave de sol maior */
+        #btn-sound { font-size: 24px; } 
 
         .small-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 #222; }
         .btn-active { background-color: #00ffcc; color: #000; box-shadow: 0 4px 0 #009977; }
         .btn-mode { background-color: #ffcc00; color: #000; box-shadow: 0 4px 0 #b38f00; }
+        .btn-install { background-color: #ff00ff; color: #fff; box-shadow: 0 4px 0 #990099; display: none; }
+
         .big-btn { width: 22vw; height: 22vw; max-width: 90px; max-height: 90px; background-color: var(--btn-color); border-radius: 50%; box-shadow: 0 6px 0 var(--btn-shadow); }
         .big-btn:active { box-shadow: 0 2px 0 var(--btn-shadow); transform: translateY(4px); }
 
@@ -525,3 +533,4 @@
 </script>
 </body>
 </html>
+
